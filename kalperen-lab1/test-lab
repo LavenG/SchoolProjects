@@ -1,0 +1,42 @@
+#!/usr/bin/env python2
+
+from testlib import *
+
+r = Runner()
+
+def matchtest(parent, name, points, *args, **kw):
+    def do_test():
+        r.match(*args, **kw)
+    test(points, name, parent=parent)(do_test)
+
+@test(0, "point structure [part1.c]")
+def test_part1():
+    r.run_test("build/part1")
+matchtest(test_part1, "set_point", 5, "part1: set_point OK")
+matchtest(test_part1, "create_point", 5, "part1: create_point OK")
+matchtest(test_part1, "point_dist", 5, "part1: point_dist OK")
+
+@test(0, "linked list [part2.c]")
+def test_part2():
+    r.run_test("build/part2")
+matchtest(test_part2, "list_insert", 5, "part2: list_insert OK")
+matchtest(test_part2, "list_end", 5, "part2: list_end OK")
+matchtest(test_part2, "list_size", 5, "part2: list_size OK")
+matchtest(test_part2, "list_find", 5, "part2: list_find OK")
+matchtest(test_part2, "list_remove", 5, "part2: list_remove OK")
+
+@test(0, "bitwise operations [part3.c]")
+def test_part3():
+    r.run_test("build/part3")
+matchtest(test_part3, "is_odd", 5, "part3: is_odd OK")
+matchtest(test_part3, "count_bits", 5, "part3: count_bits OK")
+matchtest(test_part3, "interleave_bits", 10, "part3: interleave_bits OK")
+
+@test(0, "more bitwise operations [part4.c]")
+def test_part4():
+    r.run_test("build/part4")
+matchtest(test_part4, "get_exponent_field", 10, "part4: get_exponent_field OK")
+matchtest(test_part4, "clear_msb", 10, "part4: clear_msb OK")
+matchtest(test_part4, "bit_at_index", 10, "part4: bit_at_index OK")
+
+run_tests()
