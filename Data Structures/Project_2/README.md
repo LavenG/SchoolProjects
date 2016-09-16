@@ -9,4 +9,4 @@ given user provided keys.
 ## Notes on the second version
 
 In this version the sorting method is updated to implement Merge Sort instead of Selection Sort. This results into 
-a significantly better perfomance. An in depth analysis and comparison between the two sorted algorithms is provided.
+a significantly better perfomance. An in depth analysis and comparison between the two sorted algorithms is provided in SortingTimed.pdf .
