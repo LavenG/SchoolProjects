@@ -1,4 +1,9 @@
-
+/**
+ *This record class represents a single inspection record which corresponds to a single line in the input file  
+ * it stores the different variables provided by the file in its data fields
+ * and provides comparators in order to compare different records.
+ *
+ */
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -211,8 +216,14 @@ public class Record {
 	}
 
 	public String getAddress() {
+		
+		String address = new String(this.building + " " + this.street);
 
-		return String.format(this.building + ", " + this.street);
+		return address;
+	}
+	
+	public String getKeyFormatedAddress() {
+		return this.building.toLowerCase() + this.street.toLowerCase();
 	}
 
 	public String getZip() {
