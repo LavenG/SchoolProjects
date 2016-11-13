@@ -104,7 +104,7 @@ public class Banker {
 			while(j<tasks.size()){
 				switch (tasks.get(j).getActivities().get(i).getActivity()){
 					case "initiate":
-						
+						System.out.println("initiated");
 				}
 					
 						
