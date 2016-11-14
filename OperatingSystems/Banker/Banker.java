@@ -7,7 +7,13 @@ public class Banker {
     public static File inputFile;
     public static Scanner inputScanner;
 
+    public static  int totalNumberOfTasks;
+
     public static ArrayList<Task> tasks = new ArrayList<Task>();
+    //Used to keep track of the tasks that are waiting to be executed
+    public static ArrayList<Task> waitList = new ArrayList<Task>();
+    //Used to keep track of the terminated tasks
+    public static ArrayList<Task> terminatedTasks = new ArrayList<Task>();
 
     public static ArrayList<Integer> resources = new ArrayList<Integer>();
 
@@ -61,6 +67,7 @@ public class Banker {
         for (int i = 0; i < numberOfTasks; i++) {
             tasks.add(new Task(i + 1, numberOfResourceTypes));
         }
+        totalNumberOfTasks = numberOfTasks;
 
         //For each resource type, add the number of resource we hae
         for (int i = 0; i < numberOfResourceTypes; i++) {
@@ -92,12 +99,6 @@ public class Banker {
             tasks.get(taskNumber - 1).getActivities().add(new Activity(activityType, taskNumber, resourceType, number));
         }
 
-        for (int i = 0; i < tasks.size(); i++) {
-            for (int j = 0; j < tasks.get(i).getActivities().size(); j++)
-                System.out.println(
-                        "Task Number :" + (i + 1) + " Activity: " + tasks.get(i).getActivities().get(j).toString());
-        }
-
     }
 
     //finds a task by task number in an arrayList
@@ -116,87 +117,203 @@ public class Banker {
 
         int i = 0;
 
+
         int numberOfTasksTerminated = 0;
-        int totalNumberOfTasks = tasks.size();
 
         //used to keep track of resources released in the current cycle so they can be added in the next cycle
         int [] resourcesReleased = new int [resources.size()];
 
         boolean incrementCycle = true;
 
-        ArrayList<Task> waitList = new ArrayList<Task>();
-
         System.out.println("OPTIMISTIC");
 
-        while (numberOfTasksTerminated != totalNumberOfTasks) {
-
+        while (terminatedTasks.size() != totalNumberOfTasks) {
+//            System.out.println("Terminated tasks "+ terminatedTasks.size());
+//            System.out.println("Current tasks " + tasks.size());
+//            System.out.println("Waiting tasks " + waitList.size());
+            waitListCheck(true);
+            System.out.println("In Cycle : " + cycle);
             while (i < tasks.size()) {
-
-                if (!tasks.get(i).getActivities().isEmpty()) {
-                   //System.out.println(tasks.get(i).getActivities().get(0).toString());
-                    switch (tasks.get(i).getActivities().get(0).getActivity()) {
-                        case "initiate":
-                            //we just add one to the time taken when initiating
-                            tasks.get(i).addTimeTaken(1);
-                            break;
-                        case "request":
-                            int resourceRequested = tasks.get(i).getActivities().get(0).getResourceType();
-                            int amountRequested = tasks.get(i).getActivities().get(0).getAmount();
-
-                            //grant the resource
-                            if (amountRequested < resources.get(resourceRequested - 1)) {
-                                resources.set(resourceRequested - 1, (resources.get(resourceRequested - 1) - amountRequested));
-                                tasks.get(i).getResources()[resourceRequested-1] = amountRequested;
-                                tasks.get(i).addTimeTaken(1);
-                            }
-                            //Don't grant the resource and make the task wait
-                            else {
-                                waitList.add(tasks.get(i));
-                                tasks.remove(i);
-                            }
-                            //check request
-                            break;
-                        case "release":
-                            int resourceReleased = tasks.get(i).getActivities().get(0).getResourceType();
-                            int amountReleased = tasks.get(i).getActivities().get(0).getAmount();
-                            tasks.get(i).addTimeTaken(1);
-                            //keep track of the released resources
-                            resourcesReleased[resourceReleased-1] += amountReleased;
-                            break;
-                        case "compute":
-                            break;
-                        case "terminate":
-                            incrementCycle = false;
-                            numberOfTasksTerminated ++;
-                            for(int k = 0; k<tasks.get(i).getResources().length;k++){
-                                resourcesReleased[i] += tasks.get(i).getResources()[i];
-                            }
-                            break;
+                if(tasks.get(i).isComputing()){
+                    if(tasks.get(i).getTimeComputing()!= tasks.get(i).getActivities().get(0).getAmount()){
+                        tasks.get(i).addTimeTaken(1);
+                        tasks.get(i).addTimeComputing(1);
+                    }else{
+                        tasks.get(i).getActivities().remove(0);
+                        tasks.get(i).setIsComputing(false);
                     }
-                    tasks.get(i).getActivities().remove(0);
+
+                }else{
+                    if (!tasks.get(i).getActivities().isEmpty()) {
+                        //System.out.println(tasks.get(i).getActivities().get(0).toString());
+                        switch (tasks.get(i).getActivities().get(0).getActivity()) {
+                            case "initiate":
+
+                                //we just add one to the time taken when initiating
+                                tasks.get(i).addTimeTaken(1);
+                                System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
+                                tasks.get(i).getActivities().remove(0);
+                                break;
+                            case "request":
+
+                                int resourceRequested = tasks.get(i).getActivities().get(0).getResourceType();
+                                int amountRequested = tasks.get(i).getActivities().get(0).getAmount();
+
+                                //grant the resource
+                                if (amountRequested <= resources.get(resourceRequested - 1)) {
+                                    resources.set(resourceRequested - 1, (resources.get(resourceRequested - 1) - amountRequested));
+                                    tasks.get(i).getResources()[resourceRequested-1] = amountRequested;
+                                    tasks.get(i).addTimeTaken(1);
+                                    System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
+                                    tasks.get(i).getActivities().remove(0);
+                                }
+                                //Don't grant the resource and make the task wait
+                                else {
+                                    tasks.get(i).addTimeTaken(1);
+                                    System.out.println("Task :" +tasks.get(i).getTaskNumber() + " is being added to the waitlist");
+                                    waitList.add(tasks.get(i));
+                                    tasks.remove(i);
+                                    i--;
+                                }
+                                //check request
+                                break;
+                            case "release":
+                                int resourceReleased = tasks.get(i).getActivities().get(0).getResourceType();
+                                int amountReleased = tasks.get(i).getActivities().get(0).getAmount();
+                                tasks.get(i).addTimeTaken(1);
+                                System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
+                                tasks.get(i).getActivities().remove(0);
+                                //keep track of the released resources
+                                resourcesReleased[resourceReleased-1] += amountReleased;
+                                break;
+                            case "compute":
+                                tasks.get(i).setIsComputing(true);
+                                tasks.get(i).addTimeComputing(1);
+                                tasks.get(i).addTimeTaken(1);
+                                break;
+                            case "terminate":
+                                //System.out.println("ENTER TERMINATE");
+                                incrementCycle = false;
+                                addBackResources(tasks.get(i).getResources());
+                                terminatedTasks.add(tasks.get(i));
+                                System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
+                                tasks.get(i).getActivities().remove(0);
+                                tasks.remove(i);
+                                i--;
+                                break;
+                        }
+                        //We're done with the current acitvity
+                }
                 }
                 i++;
             }
-            cycle += 1;
-
-            //add back the resources that were realeased
-            for(int n = 0; n<resources.size(); n++){
-                resources.set(n, (resources.get(n)+resourcesReleased[n]));
+            //check if the current cycle should be incremented
+            if(incrementCycle){
+                cycle += 1;
+            }else{
+                incrementCycle = true;
             }
 
-            incrementCycle = true;
+
+            //check if anything is done waiting
+            waitListCheck(false);
+            //check if there is a deadlock
+            while(isDeadLocked()){
+                handleDeadLocked();
+                waitListCheck(true);
+            }
+            //add back the resources that were realeased
+            addBackResources(resourcesReleased);
+
+            //Reset the index to go through the tasks again
             i = 0;
         }
 
+
+        resultPrinter();
+
+    }
+
+    public static  void resultPrinter(){
         System.out.println("RESULT: ");
         int totalTimeTaken  = 0;
-        for (int k = 0; k < tasks.size(); k++) {
-            System.out.println("task number: " + tasks.get(k).getTaskNumber() + "time taken: " + tasks.get(k).getTimeTaken()
-                    + "waiting time: " + tasks.get(k).getWaitingTime());
-            totalTimeTaken += tasks.get(k).getTimeTaken();
+        for (int k = 0; k < terminatedTasks.size(); k++) {
+            if(!terminatedTasks.get(k).isAborted()){
+                System.out.println("task number: " + terminatedTasks.get(k).getTaskNumber() + " time taken: " + terminatedTasks.get(k).getTimeTaken()
+                        + " waiting time: " + terminatedTasks.get(k).getWaitingTime());
+                totalTimeTaken += terminatedTasks.get(k).getTimeTaken();
+            }else{
+                System.out.println("Task number: " + terminatedTasks.get(k).getTaskNumber()+ " aborted");
+            }
+
         }
         System.out.println("Total time taken: " + totalTimeTaken);
+    }
 
+    public static void waitListCheck(boolean alreadyRan){
+        for(int i = 0;i < waitList.size(); i++){
+            int resourceRequested = waitList.get(i).getActivities().get(0).getResourceType();
+            int amountRequested = waitList.get(i).getActivities().get(0).getAmount();
+            //If the request can now be potentially satisfied, remove the task from the waitlist
+            if(amountRequested <= resources.get(resourceRequested-1)){
+                System.out.println("Task :" + waitList.get(i).getTaskNumber() + " is being moved from the wait list to the ready list");
+                tasks.add(waitList.get(i));
+                waitList.remove(i);
+            }
+            else{
+                if(!alreadyRan){
+                    waitList.get(i).addWaitingTime(1);
+                }
+            }
+        }
+    }
+    //Check for deadlocks
+    public static void handleDeadLocked(){
+        //If everything has not terminated and there is nothing running then there must be a deadlock
+        if(terminatedTasks.size()!= totalNumberOfTasks && tasks.isEmpty()){
+            //Find the lowest numbered Task to be aborted
+            int lowestNumberedTask = findLowestNumberedTask(waitList);
+            addBackResources(waitList.get(findTaskIndexByNumber(waitList, lowestNumberedTask)).getResources());
+            waitList.get(findTaskIndexByNumber(waitList, lowestNumberedTask)).abort();
+            System.out.println("Task :" + waitList.get(findTaskIndexByNumber(waitList, lowestNumberedTask)).getTaskNumber() + " is being aborted");
+            terminatedTasks.add(waitList.get(findTaskIndexByNumber(waitList, lowestNumberedTask)));
+            waitList.remove(findTaskIndexByNumber(waitList, lowestNumberedTask));
+
+        }
+    }
+
+    public static boolean isDeadLocked(){
+        if(terminatedTasks.size()!= totalNumberOfTasks && tasks.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public static int findLowestNumberedTask(ArrayList<Task> toSearch){
+        int lowestNumber = toSearch.get(0).getTaskNumber();
+        for(int i= 0; i<toSearch.size(); i++){
+            if(toSearch.get(i).getTaskNumber()<lowestNumber){
+                lowestNumber = toSearch.get(i).getTaskNumber();
+            }
+        }
+        System.out.println("The lowest numbered task's number is " + lowestNumber);
+        return lowestNumber;
+    }
+
+    public static int findTaskIndexByNumber(ArrayList<Task> list, int taskNumber){
+        for(int i=0;i<list.size();i++){
+            if(list.get(i).getTaskNumber() == taskNumber){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static void addBackResources(int [] resourcesReleased){
+        for(int i=0;i<resourcesReleased.length;i++){
+            resources.set(i, (resources.get(i)+resourcesReleased[i]));
+        }
     }
 
 }

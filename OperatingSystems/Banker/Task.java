@@ -8,7 +8,12 @@ public class Task {
     private int timeTaken;
     private int waitingTime;
 
+    private int timeComputing;
+
+    private boolean isComputing;
     //Used to store all the activities related to this task
+    private boolean isAborted;
+
     private ArrayList<Activity> activities = new ArrayList<Activity>();
 
     private int [] resources;
@@ -19,7 +24,9 @@ public class Task {
         this.timeTaken = 0;
         this.waitingTime = 0;
         this.resources = new int[size];
-
+        this.isComputing = false;
+        this.isAborted = false;
+        this.timeComputing = 0;
     }
 
     public int [] getResources() {return this.resources;}
@@ -42,4 +49,32 @@ public class Task {
 
     public void addTimeTaken(int time) {timeTaken += time;}
     public void addWaitingTime(int time) {waitingTime += time;}
+
+    public void setIsComputing(boolean computing){
+        this.isComputing = computing;
+    }
+
+    public boolean isComputing(){
+        return this.isComputing;
+    }
+
+    public void setTimeComputing(int time){
+        this.timeComputing = time;
+    }
+
+    public void addTimeComputing(int i){
+        this.timeComputing += i;
+    }
+
+    public int getTimeComputing(){
+        return this.timeComputing;
+    }
+
+    public boolean isAborted(){
+        return this.isAborted;
+    }
+
+    public void abort(){
+        this.isAborted = true;
+    }
 }
