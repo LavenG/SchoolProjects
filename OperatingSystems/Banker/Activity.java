@@ -1,53 +1,45 @@
 
 public class Activity {
-	
-	private final String INITIATE = "initiate";
-	private final String REQUEST = "request";
-	private final String RELEASE = "release";
-	private final String COMPUTE = "compute";
-	private final String TERMINATE = "terminate";
-	
+
+	//Used to define the type of activity
 	private String activityType;
-	
+
+	//Used to store the task number that the activity is defined for
 	private int taskNumber;
 	
-	//Represents the type of resource concerned, also used for number of cycles for the compute activity
+	//Represents the type of resource concerned, also used for number-of-cycles since it's passed as the third arg
 	private int resourceType;
-	
-	private int initialClaim;
-	private int numberRequested;
-	private int numberReleased;
-	
-	private int numberOfCycles;
+
+	//Used to store the initial-claim, number-requested, number-released
+	private int amount;
 	
 	public Activity(String activity, int taskNumber, int resourceType, int number){
+
+		//the task number is assigned the same way for each
+		this.taskNumber = taskNumber;
+
 		switch (activity){
-			case INITIATE: 
-				this.activityType = INITIATE;
-				this.taskNumber = taskNumber;
+			case "initiate":
+				this.activityType = "initiate";
 				this.resourceType = resourceType;
-				this.initialClaim = number;
+				this.amount = number;
 				break;
-			case REQUEST:
-				this.activityType = REQUEST;
-				this.taskNumber = taskNumber;
+			case "request":
+				this.activityType = "request";
 				this.resourceType = resourceType;
-				this.numberRequested = number;
+				this.amount = number;
 				break;
-			case RELEASE:
-				this.activityType = RELEASE;
-				this.taskNumber = taskNumber;
+			case "release":
+				this.activityType = "release";
 				this.resourceType = resourceType;
-				this.numberReleased = number;
+				this.amount = number;
 				break;
-			case COMPUTE:
-				this.activityType = COMPUTE;
-				this.taskNumber = taskNumber;
-				this.numberOfCycles = resourceType;
+			case "compute":
+				this.activityType = "compute";
+				this.amount = resourceType;
 				break;
-			case TERMINATE:
-				this.activityType = TERMINATE;
-				this.taskNumber = taskNumber;
+			case "terminate":
+				this.activityType = "terminate";
 				break;
 			default:
 				break;
@@ -66,34 +58,23 @@ public class Activity {
 		return this.resourceType;
 	}
 	
-	public int getInitialClaim(){
-		return this.initialClaim;
+	public int getAmount(){
+		return this.amount;
 	}
-	
-	public int getNumberRequested(){
-		return this.numberRequested;
-	}
-	
-	public int getNumberReleased(){
-		return this.numberReleased;
-	}
-	
-	public int getNumberOfCycles(){
-		return this.numberOfCycles;
-	}
+
 	
 	@Override
 	public String toString(){
 		switch (this.activityType){
-		case INITIATE: 
-			return this.activityType +" "+ this.taskNumber +" "+ this.resourceType +" "+ this.initialClaim;
-		case REQUEST:
-			return this.activityType +" "+ this.taskNumber +" "+ this.resourceType +" "+ this.numberRequested;
-		case RELEASE:
-			return this.activityType +" "+ this.taskNumber +" "+ this.resourceType +" "+ this.numberReleased;
-		case COMPUTE:
-			return this.activityType +" "+ this.taskNumber +" "+ this.numberOfCycles;
-		case TERMINATE:
+		case "initiate":
+			return this.activityType +" "+ this.taskNumber +" "+ this.resourceType +" "+ this.amount;
+		case "request":
+			return this.activityType +" "+ this.taskNumber +" "+ this.resourceType +" "+ this.amount;
+		case "release":
+			return this.activityType +" "+ this.taskNumber +" "+ this.resourceType +" "+ this.amount;
+		case "compute":
+			return this.activityType +" "+ this.taskNumber +" "+ this.amount;
+		case "terminate":
 			return this.activityType +" "+ this.taskNumber ;
 		default:
 			return "";
