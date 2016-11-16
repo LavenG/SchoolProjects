@@ -17,6 +17,7 @@ public class Task {
     private ArrayList<Activity> activities = new ArrayList<Activity>();
 
     private int [] resources;
+    private int [] claims;
 
     //initializes the task with the provided number
     public Task(int tasknumber,int size) {
@@ -24,6 +25,7 @@ public class Task {
         this.timeTaken = 0;
         this.waitingTime = 0;
         this.resources = new int[size];
+        this.claims = new int[size];
         this.isComputing = false;
         this.isAborted = false;
         this.timeComputing = 0;
