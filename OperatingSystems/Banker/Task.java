@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Task {
+public class Task implements Cloneable{
 
     //Keeps track of the task number
     private int taskNumber;
@@ -31,8 +31,21 @@ public class Task {
         this.timeComputing = 0;
     }
 
+    public Task(Task t){
+        this.taskNumber = t.getTaskNumber();
+        this.timeTaken = t.getTimeTaken();
+        this.waitingTime = t.getWaitingTime();
+        this.resources = arrayClone(t.getResources());
+        this.claims = arrayClone(t.getClaims());
+        this.isComputing = t.isComputing();
+        this.isAborted = t.isAborted();
+        this.timeComputing = t.getTimeComputing();
+        this.activities = t.activities;
+    }
+
     public int [] getResources() {return this.resources;}
 
+    public int [] getClaims() {return  this.claims;}
     //returns the task number
     public int getTaskNumber() {
         return this.taskNumber;
@@ -78,5 +91,13 @@ public class Task {
 
     public void abort(){
         this.isAborted = true;
+    }
+
+    public static int[] arrayClone(int [] toClone){
+        int []cloned = new int[toClone.length];
+        for(int i = 0; i < toClone.length; i++){
+            cloned[i] = toClone[i];
+        }
+        return cloned;
     }
 }

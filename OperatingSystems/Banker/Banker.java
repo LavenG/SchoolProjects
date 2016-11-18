@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class Banker {
@@ -28,8 +29,9 @@ public class Banker {
 
         initializeScanner();
         parseInput();
-        optimistic();
+        //optimistic();
         flush();
+        banker();
     }
 
     //Initializes the scanner to read the input
@@ -151,7 +153,7 @@ public class Banker {
             System.out.println("Items available " + resources.get(0));
 
             while (i < tasks.size()) {
-                System.out.println("CURR Task " + tasks.get(i).getTaskNumber() + " activity " + tasks.get(i).getActivities().get(0));
+                //System.out.println("CURR Task " + tasks.get(i).getTaskNumber() + " activity " + tasks.get(i).getActivities().get(0));
                 if (tasks.get(i).isComputing()) {
                     //tasks.get(i).addTimeComputing(1);
                     System.out.println("Task :" + tasks.get(i).getTaskNumber() + "Has been computing for " + tasks.get(i).getTimeComputing() + "/" + tasks.get(i).getActivities().get(0).getAmount());
@@ -246,6 +248,7 @@ public class Banker {
             //check if anything is done waiting
             addWaitingTimes();
             waitListCheck();
+
             //check if there is a deadlock
             while (isDeadLocked()) {
                 handleDeadLocked();
@@ -278,20 +281,6 @@ public class Banker {
         System.out.println("Total time taken: " + totalTimeTaken);
     }
 
-    public static void waitListCheck() {
-        for (int i = 0; i < waitList.size(); i++) {
-            int resourceRequested = waitList.get(i).getActivities().get(0).getResourceType();
-            int amountRequested = waitList.get(i).getActivities().get(0).getAmount();
-            //If the request can now be potentially satisfied, remove the task from the waitlist
-            if (amountRequested <= resources.get(resourceRequested - 1)) {
-                System.out.println("Items available before moving lists " + resources.get(resourceRequested - 1));
-                System.out.println("Task :" + waitList.get(i).getTaskNumber() + " is being moved from the wait list to the ready list");
-                tasks.add(waitList.get(i));
-                waitList.remove(i);
-            }
-        }
-    }
-
     public static void addWaitingTimes() {
         for (int i = 0; i < waitList.size(); i++) {
             waitList.get(i).addWaitingTime(1);
@@ -300,9 +289,9 @@ public class Banker {
 
     public static void addComputingTimes() {
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(tasks.get(i).getTaskNumber() + "FUCKING COMPUTING TIME IS " + tasks.get(i).getActivities().get(0).getAmount());
+            //System.out.println(tasks.get(i).getTaskNumber() + "FUCKING COMPUTING TIME IS " + tasks.get(i).getActivities().get(0).getAmount());
             if (tasks.get(i).isComputing() && tasks.get(i).getActivities().get(0).getAmount() == 1) {
-                System.out.println("THUS WE MUST BE HERE FUCKER");
+                //System.out.println("THUS WE MUST BE HERE FUCKER");
                 tasks.get(i).getActivities().remove(0);
                 tasks.get(i).setTimeComputing(0);
                 tasks.get(i).setIsComputing(false);
@@ -374,9 +363,13 @@ public class Banker {
         //used to keep track of resources released in the current cycle so they can be added in the next cycle
         int[] resourcesReleased = new int[resources.size()];
 
+        //Keep track of initial resources to check if any claims exceeds them
+        ArrayList<Integer> initialResources = new ArrayList<Integer>();
+        initialResources = copyIntegerArrayList(resources);
+
         boolean incrementCycle = true;
 
-        System.out.println("OPTIMISTIC");
+        System.out.println("BANKER");
 
         while (terminatedTasks.size() != totalNumberOfTasks) {
 //            System.out.println("Terminated tasks "+ terminatedTasks.size());
@@ -386,11 +379,12 @@ public class Banker {
             System.out.println("In Cycle : " + cycle);
             System.out.println("Items available " + resources.get(0));
 
+
             while (i < tasks.size()) {
-                System.out.println("CURR Task " + tasks.get(i).getTaskNumber() + " activity " + tasks.get(i).getActivities().get(0));
+               System.out.println("CURR Task " + tasks.get(i).getTaskNumber() + " activity " + tasks.get(i).getActivities().get(0));
                 if (tasks.get(i).isComputing()) {
                     //tasks.get(i).addTimeComputing(1);
-                    System.out.println("Task :" + tasks.get(i).getTaskNumber() + "Has been computing for " + tasks.get(i).getTimeComputing() + "/" + tasks.get(i).getActivities().get(0).getAmount());
+                    //System.out.println("Task :" + tasks.get(i).getTaskNumber() + "Has been computing for " + tasks.get(i).getTimeComputing() + "/" + tasks.get(i).getActivities().get(0).getAmount());
                     if (tasks.get(i).getActivities().get(0).getAmount() == 1) {
                         tasks.get(i).getActivities().remove(0);
                         tasks.get(i).setTimeComputing(0);
@@ -409,33 +403,53 @@ public class Banker {
                         //System.out.println(tasks.get(i).getActivities().get(0).toString());
                         switch (tasks.get(i).getActivities().get(0).getActivity()) {
                             case "initiate":
+                                int resourceType = tasks.get(i).getActivities().get(0).getResourceType();
+                                int amountClaimed = tasks.get(i).getActivities().get(0).getAmount();
 
-                                //we just add one to the time taken when initiating
-                                System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
-                                tasks.get(i).getActivities().remove(0);
+                                if (amountClaimed > initialResources.get(resourceType - 1)) {
+                                    tasks.get(i).abort();
+                                    terminatedTasks.add(tasks.get(i));
+                                    tasks.remove(i);
+                                    i--;
+                                } else {
+                                    tasks.get(i).getClaims()[resourceType - 1] = amountClaimed;
+                                    System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
+                                    tasks.get(i).getActivities().remove(0);
+                                }
+
                                 break;
                             case "request":
 
                                 int resourceRequested = tasks.get(i).getActivities().get(0).getResourceType();
                                 int amountRequested = tasks.get(i).getActivities().get(0).getAmount();
 
-                                //grant the resource
-                                if (amountRequested <= resources.get(resourceRequested - 1)) {
-                                    System.out.println("IN REQUEST, RESOURCE AVAILABLE " + resources.get(resourceRequested - 1) + " AMOUNT REQUESTED " + amountRequested);
+                                int amountThatWouldBeHeld = amountRequested +tasks.get(i).getResources()[resourceRequested-1];
+                                //System.out.println("amount requested " + amountRequested + " amount claimed "+tasks.get(i).getClaims()[resourceRequested-1]);
 
-                                    resources.set(resourceRequested - 1, (resources.get(resourceRequested - 1) - amountRequested));
-                                    tasks.get(i).getResources()[resourceRequested - 1] += amountRequested;
-                                    System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
-                                    System.out.println("Resourecs now available at this point " + resources.get(0));
-                                    tasks.get(i).getActivities().remove(0);
-                                }
-                                //Don't grant the resource and make the task wait
-                                else {
-                                    System.out.println("Task :" + tasks.get(i).getTaskNumber() + " is being added to the waitlist");
-                                    waitList.add(tasks.get(i));
+                                if(amountThatWouldBeHeld > tasks.get(i).getClaims()[resourceRequested-1]){
+                                    tasks.get(i).abort();
+                                    resourcesReleased[resourceRequested-1] += tasks.get(i).getResources()[resourceRequested-1];
+                                    terminatedTasks.add(tasks.get(i));
                                     tasks.remove(i);
                                     i--;
+                                }else{
+                                    if (isSafe(tasks.get(i))) {
+                                        System.out.println("After checking safe, task number " + tasks.get(i).getTaskNumber() + " has " + tasks.get(i).getResources()[0]);
+
+                                        resources.set(resourceRequested - 1, (resources.get(resourceRequested - 1) - amountRequested));
+                                        tasks.get(i).getResources()[resourceRequested - 1] += amountRequested;
+                                        System.out.println("Task :" + tasks.get(i).getTaskNumber() + " completed " + tasks.get(i).getActivities().get(0).toString());
+                                        System.out.println("Resourecs now available at this point " + resources.get(0));
+                                        tasks.get(i).getActivities().remove(0);
+                                    } else {
+                                        System.out.println("Task :" + tasks.get(i).getTaskNumber() + " is being added to the waitlist");
+                                        waitList.add(tasks.get(i));
+                                        tasks.remove(i);
+                                        i--;
+                                    }
                                 }
+
+
                                 //check request
                                 break;
                             case "release":
@@ -481,12 +495,15 @@ public class Banker {
             //System.out.println("BEFORE CHECKS RESOURCE AVAILBLE" + resources.get(0));
             //check if anything is done waiting
             addWaitingTimes();
-            waitListCheck();
-            //check if there is a deadlock
-            while (isDeadLocked()) {
-                handleDeadLocked();
-                waitListCheck();
+
+            for(int z = 0; z < waitList.size();z++){
+                System.out.println("TASK " + waitList.get(z).getTaskNumber() + " HAS BEEN WAITING FOR " + waitList.get(z).getWaitingTime());
             }
+
+
+            //waitListCheck();
+            bankersWaiList();
+            //check if there is a deadlock
 
             //Reset the index to go through the tasks again
             i = 0;
@@ -497,10 +514,132 @@ public class Banker {
 
     }
 
+public static boolean isSafe(Task task){
+    //Copy everything to avoid changing the original values
+    ArrayList<Integer> resourcesCopy = copyIntegerArrayList(resources);
+    ArrayList<Task> tasksCopy = copyTaskArrayList(tasks);
+    ArrayList<Task> waitListCopy = copyTaskArrayList(waitList);
+    ArrayList<Task> terminatedCopy = copyTaskArrayList(terminatedTasks);
 
-public static void isSafe(){
+    //substract the amount that would be granted from the resources
+    int taskIndex = findTaskIndexByNumber(tasksCopy, task.getTaskNumber());
+    int amountRequested = task.getActivities().get(0).getAmount();
+    int resourceRequested = task.getActivities().get(0).getResourceType();
+
+
+    tasksCopy.get(taskIndex).getResources()[resourceRequested-1] += amountRequested;
+    resourcesCopy.set(resourceRequested-1, resourcesCopy.get(resourceRequested-1)-amountRequested);
+//    System.out.println("TASK NUMBER " + 2 + " HAS " + tasksCopy.get(1).getResources()[0]);
+ //   System.out.println("TASK NUMBER 1 HAS " + tasksCopy.get(0).getResources()[0]);
+
+    int terminated = -1;
+    while(terminated != 0) {
+        terminated = 0;
+
+        //resourcesCopy.set(resourceRequested-1, resourcesCopy.get(resourceRequested-1)-amountRequested);
+
+        for (int i = 0; i < tasksCopy.size(); i++) {
+
+            int resourcesSatisfied = 0;
+
+            for (int j = 0; j < tasksCopy.get(i).getResources().length; j++) {
+//                System.out.println("TASK #: " + tasksCopy.get(i).getTaskNumber());
+//                System.out.println("CLAIMS " + tasksCopy.get(i).getClaims()[j]);
+//                System.out.println("HAS " + tasksCopy.get(i).getResources()[j]);
+//                System.out.println("AVAILABLE " + resourcesCopy.get(j));
+                if (tasksCopy.get(i).getClaims()[j] - tasksCopy.get(i).getResources()[j] <= resourcesCopy.get(j)) {
+//                    System.out.println("--SATISFIED--");
+                    resourcesSatisfied++;
+                    //If a task is satisfied pretend to release its resources and see if more can be satisfied
+                }
+            }
+//            System.out.println("Resources Satisfied " + resourcesSatisfied);
+//            System.out.println("Resources size " + resourcesCopy.size());
+            if (resourcesSatisfied == resourcesCopy.size()) {
+                terminated++;
+                terminatedCopy.add(tasksCopy.get(i));
+                for (int k = 0; k < tasksCopy.get(i).getResources().length; k++) {
+                    resourcesCopy.set(k, resourcesCopy.get(k) + tasksCopy.get(i).getResources()[k]);
+                }
+                tasksCopy.remove(i);
+            }
+        }
+    }
+    //System.out.println("Tasks remaining : "+ tasksCopy.size());
+    if(tasksCopy.size() != 0){
+        return false;
+    }
+    //System.out.println("THIS IS SAFE");
+    return true;
+
 
 }
+
+public static void waitListCheck(){
+    Stack<Task> stack = new Stack<>();
+    for (int i = 0; i < waitList.size(); i++) {
+        int resourceRequested = waitList.get(i).getActivities().get(0).getResourceType();
+        int amountRequested = waitList.get(i).getActivities().get(0).getAmount();
+        //If the request can now be potentially satisfied, remove the task from the waitlist
+        if (amountRequested <= resources.get(resourceRequested - 1)) {
+            System.out.println("Items available before moving lists " + resources.get(resourceRequested - 1));
+            System.out.println("Task :" + waitList.get(i).getTaskNumber() + " is being moved from the wait list to the ready list");
+            stack.push(waitList.remove(i));
+            //i--;
+            //tasks.add(0 , waitList.get(i));
+            //waitList.remove(i);
+        }
+    }
+    for(int i = 0; i<stack.size();i++){
+        tasks.add(0, stack.pop());
+    }
+}
+
+public static void bankersWaiList(){
+    Stack<Task> stack = new Stack<Task>();
+
+    for(int i =0;i<waitList.size();i++){
+        System.out.println("TASK " + waitList.get(i).getTaskNumber() + " WAS IN THE WAITLIST -----®");
+    }
+
+    int size = waitList.size();
+    while(!waitList.isEmpty()){
+        System.out.println("+++++++++++ task number IS "+waitList.get(0).getTaskNumber());
+        stack.push(waitList.remove(0));
+    }
+//    for (int i = 0; i < size;i++){
+//        stack.push(waitList.remove(i));
+//    }
+    while(!stack.isEmpty()){
+        tasks.add(0, stack.pop());
+    }
+//    for(int i = 0; i<stack.size();i++){
+//        tasks.add(0, stack.pop());
+//    }
+    System.out.println("AFTER CLEAN UP WAITLIST CONTAINS: ");
+    for(int i =0;i<waitList.size();i++){
+        System.out.println("TASK " + waitList.get(i).getTaskNumber());
+    }
+
+}
+
+public static ArrayList<Integer> copyIntegerArrayList(ArrayList<Integer> toCopy){
+    ArrayList<Integer> copy = new ArrayList<Integer>();
+    for(int i =0; i < toCopy.size() ; i++){
+        copy.add(toCopy.get(i));
+    }
+    return copy;
+}
+
+public static ArrayList<Task> copyTaskArrayList(ArrayList<Task> toCopy){
+    ArrayList<Task> copy = new ArrayList<Task>();
+    for(Task task : toCopy){
+        copy.add(new Task(task));
+    }
+    return copy;
+}
+
+
 
 
 static class comparatorByTaskNumber implements Comparator<Task> {
@@ -513,7 +652,5 @@ static class comparatorByTaskNumber implements Comparator<Task> {
         }
     }
 }
-
-
 
 }
