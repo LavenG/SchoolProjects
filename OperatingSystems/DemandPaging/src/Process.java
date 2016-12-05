@@ -43,8 +43,8 @@ public class Process {
     public float getB(){return this.B;}
     public float getC(){return this.C;}
 
-    public int getPrevRef(){return this.prevRef;}
-    public void setPrevRef(int ref){this.prevRef =ref;}
+    public int getPreRef(){return this.prevRef;}
+    public void setPreRef(int ref){this.prevRef =ref;}
 
     public int getCurrentRef(){return this.currentRef;}
     public void setCurrentRef(int ref){this.currentRef = ref;}

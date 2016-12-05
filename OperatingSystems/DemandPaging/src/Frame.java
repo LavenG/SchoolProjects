@@ -21,6 +21,9 @@ public class Frame {
     @Override
     public boolean equals(Object o){
         Frame f = (Frame)o;
+//        System.out.println("In .equals COMPARING: ");
+//        System.out.println(f.getProcessNumber() + " " + f.getPage());
+//        System.out.println(this.getProcessNumber() + " " + this.getPage());
         if(f.getProcessNumber() == this.getProcessNumber() && f.getPage() == this.getPage()){
             return true;
         }
