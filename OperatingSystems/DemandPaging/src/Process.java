@@ -5,6 +5,8 @@ public class Process {
 
     private int processNumber;
 
+    private int currentRef;
+    private int prevRef;
 
     private int faults = 0;
     private int residencyTime = 0;
@@ -12,7 +14,6 @@ public class Process {
     private float A;
     private float B;
     private float C;
-    private float D;
 
     private boolean initial;
 
@@ -23,7 +24,6 @@ public class Process {
         this.A = A;
         this.B = B;
         this.C = C;
-        this.D = 1 - A - B - C;
 
     }
 
@@ -38,5 +38,15 @@ public class Process {
     public int getResidencyTime(){return this.residencyTime;}
     public void incEvict(){this.evictionCount++;}
     public int getEvictionCount(){return this.evictionCount;}
+
+    public float getA(){return this.A;}
+    public float getB(){return this.B;}
+    public float getC(){return this.C;}
+
+    public int getPrevRef(){return this.prevRef;}
+    public void setPrevRef(int ref){this.prevRef =ref;}
+
+    public int getCurrentRef(){return this.currentRef;}
+    public void setCurrentRef(int ref){this.currentRef = ref;}
 
 }

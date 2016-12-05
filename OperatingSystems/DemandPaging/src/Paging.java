@@ -7,8 +7,7 @@ import java.io.*;
 
 public class Paging {
 
-    //public static String;
-    public static File inputFile;
+    //Scanner to read in the random numbers
     public static Scanner inputScanner;
 
     //Keeps track of the machine size
@@ -30,10 +29,16 @@ public class Paging {
 
     public static LinkedList<Frame> lruTracker = new LinkedList<Frame>();
 
-    public final int QUANTUM = 3;
+    public static final int QUANTUM = 3;
 
 
     public static void main(String[] args){
+
+        try{
+            inputScanner = new Scanner(new File("random-numbers.txt"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         //Checks that the number of arguments is valid
         if (args.length != 6) {
@@ -55,8 +60,9 @@ public class Paging {
         }
 
         infoPrinter();
+
         processInitializer();
-        LRU();
+        Pager();
         resultPrinter();
 
 
@@ -72,7 +78,6 @@ public class Paging {
     }
 
     public static void processInitializer(){
-        int frameTableSize = M/P;
         switch (J){
             case 1:
                 processes.add(new Process(1, 1, 0, 0));
@@ -99,53 +104,64 @@ public class Paging {
         }
     }
 
-    public static void LRU(){
-
-        for(int i = 1; i <= N; i++){
-            System.out.println("TIME " + (i));
-            //First time, must fault
-            int wordReferenced = (int)Math.floor((double)(111+(i-1))%S);
-            int pageReferenced = (int)Math.floor((double)(111+(i-1))%S/(double)P);
-
-            if(processes.get(0).getInitial()){
-                processes.get(0).incFault();
-                int index = findHighestFreeFrameIndex(frameTable);
-                if(index!= -1){
-                    frameTable[index] = new Frame(processes.get(0).getProcessNumber(), pageReferenced, i);
-                    lruTracker.addFirst(frameTable[index]);
-                    System.out.println("FAULT " +1 + " References word " + wordReferenced + " page " + pageReferenced );
-                }else{
-                    evict(i);
-                }
-                processes.get(0).setInitial(false);
-            }else{
-                Frame currentFrame = new Frame(processes.get(0).getProcessNumber(), (int)Math.floor((double)(111+(i-1))%S/(double)P), i);
-                int currentword = (int)Math.floor((double)(111+(i-1))%S);
-                int currentReference = (int)Math.floor((double)(111+(i-1))%S/(double)P);
-                System.out.println("CURRENT WORD " + currentword + " CURRENT PAGE " + currentReference);
-                if(checkHit(currentFrame)){
-                    int indexOfMRU = findIndexOfFrameInLinkedList(currentFrame);
-                    Frame mru = lruTracker.remove(indexOfMRU);
-                    lruTracker.addFirst(mru);
-                    System.out.println("HIT");
-                }else{
-                    int index = findHighestFreeFrameIndex(frameTable);
-                    processes.get(0).incFault();
-                    if(index != -1){
-                        frameTable[index] = new Frame(processes.get(0).getProcessNumber(), pageReferenced, i);
-                        lruTracker.addFirst(frameTable[index]);
-                        System.out.println("FAULT " + 1 + " References word " + wordReferenced + " page " + pageReferenced +" using free frame " + index);
+    public static void Pager(){
+        //Keep track to see if everything has finished and the time
+        int counter = 1;
+        while(counter <= N * processes.size()){
+            for(int i = 0; i < processes.size(); i++){
+                for(int j = 0; j < QUANTUM; j++){
+                    System.out.println("\nTIME " + (counter));
+                    //First time, must fault
+                    if(processes.get(i).getInitial()){
+                        processes.get(i).incFault();
+                        int index = findHighestFreeFrameIndex();
+                        if(index!= -1){
+                            fault(index, new Frame(processes.get(i).getProcessNumber(), (int)Math.floor((double)(111+(counter-1))%S/(double)P), counter));
+                        }else{
+                            evict(i, counter);
+                        }
+                        processes.get(i).setInitial(false);
+                        processes.get(i).setPrevRef((int)Math.floor((double)(111+(counter-1))%S/(double)P));
                     }else{
-                        evict(i);
+                        Frame currentFrame = new Frame(processes.get(0).getProcessNumber(), (int)Math.floor((double)(111+(counter-1))%S/(double)P), counter);
+                        System.out.println("CURRENT WORD " + (int)Math.floor((double)(111+(counter-1))%S) + " CURRENT PAGE " + (int)Math.floor((double)(111+(counter-1))%S/(double)P));
+
+                        if(checkHit(currentFrame)){
+                            hit(currentFrame);
+                        }else{
+                            int index = findHighestFreeFrameIndex();
+                            processes.get(i).incFault();
+                            if(index != -1){
+                                fault(index, new Frame(processes.get(i).getProcessNumber(), (int)Math.floor((double)(111+(counter-1))%S/(double)P), counter));
+                            }else{
+                                evict(i, counter);
+                            }
+                        }
+                    }
+                    int randomNum = inputScanner.nextInt();
+                    double y = randomNum/(Integer.MAX_VALUE + 1d);
+                    counter++;
+
+                    if(y < processes.get(i).getA()){
+
+                    }else if(y < processes.get(i).getB()){
+
+                    }else if(y < processes.get(i).getC()){
+
+                    }else{
+
                     }
                 }
+
             }
+
         }
-        }
+
+    }
 
 
 
-    public static int findHighestFreeFrameIndex(Frame[] frameTable){
+    public static int findHighestFreeFrameIndex(){
 
         for(int i = frameTable.length-1; i > -1; i--){
             if(frameTable[i] == null){
@@ -158,10 +174,20 @@ public class Paging {
     public static boolean checkHit(Frame f){
         //find the process referenced
         for(int i =0; i< frameTable.length ;i++){
+            if(frameTable[i] != null){
+                System.out.println("at frame " + i + " init " + frameTable[i].getProcessNumber() + " " + frameTable[i].getPage());
+            }else{
+                System.out.println("at frame " + i + " NULL");
+            }
+
             if(frameTable[i] != null && frameTable[i].equals(f)){
+                System.out.println("COMPARING: ");
+                System.out.println(frameTable[i].getProcessNumber() + " " + frameTable[i].getPage());
+                System.out.println(f.getProcessNumber() + " " + f.getPage());
                 return true;
             }
         }
+        System.out.println("RETURNED FALSE");
         return false;
     }
 
@@ -187,14 +213,35 @@ public class Paging {
         return -1;
     }
 
-    public static void evict(int i){
+    public static void hit(Frame f){
+        switch (R){
+            case "lru":
+                int indexOfMRU = findIndexOfFrameInLinkedList(f);
+                Frame mru = lruTracker.remove(indexOfMRU);
+                lruTracker.addFirst(mru);
+                System.out.println("HIT");
+                break;
+        }
+    }
+
+    public static void evict(int i,int time){
+        //Evict the least recently used
         Frame toEvict = lruTracker.removeLast();
-        processes.get(0).incResidencyTime(i-toEvict.getLoadTime());
-        processes.get(0).incEvict();
+        //Increment residency time and number of evictions
+        processes.get(i).incResidencyTime(time-toEvict.getLoadTime());
+        processes.get(i).incEvict();
+        //find the index at which the frame to evict is in the frame table
         int insertionIndex = findIndexOfFrame(toEvict);
-        System.out.print("Evicting page " + toEvict.getPage() + "of "+ toEvict.getProcessNumber() + "from fram " + insertionIndex);
-        frameTable[insertionIndex] = new Frame(processes.get(0).getProcessNumber(), (int)Math.floor((double)(111+(i-1))%S/(double)P), i);
+
+        System.out.print("Evicting page " + toEvict.getPage() + " of "+ toEvict.getProcessNumber() + " from frame " + insertionIndex);
+        frameTable[insertionIndex] = new Frame(processes.get(i).getProcessNumber(), (int)Math.floor((double)(111+(time-1))%S/(double)P), time);
         lruTracker.addFirst(frameTable[insertionIndex]);
+    }
+
+    public static void fault(int index, Frame f){
+        frameTable[index] = f;
+        lruTracker.addFirst(frameTable[index]);
+        System.out.println("FAULT " + 1 + " References word " + " page " + f.getPage() +" using free frame " + index);
     }
 
     public static void resultPrinter(){

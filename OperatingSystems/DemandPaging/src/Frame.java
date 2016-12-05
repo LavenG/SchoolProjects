@@ -21,7 +21,7 @@ public class Frame {
     @Override
     public boolean equals(Object o){
         Frame f = (Frame)o;
-        if(f.getProcessNumber() == f.getProcessNumber() && f.getPage() == ((Frame) o).getPage()){
+        if(f.getProcessNumber() == this.getProcessNumber() && f.getPage() == this.getPage()){
             return true;
         }
         return false;
