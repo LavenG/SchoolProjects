@@ -2,8 +2,8 @@
 
 This project makes use of serving static files, using forms and templating using handlebars
 
-##dicey
+## dicey
 A site that simulates generating a passphrase using diceware
 
-##foodz
+## foodz
 A meal recommendation site
