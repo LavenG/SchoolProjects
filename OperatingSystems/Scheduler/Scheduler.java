@@ -16,6 +16,7 @@ public class Scheduler {
 	private static ArrayList<Process> processes = new ArrayList<Process>();
 	private static ArrayList<Process> initialProcesses = new ArrayList<Process>();
 
+	// Used to keep track of the processes in each state
 	private static ArrayList<Process> readyProcesses = new ArrayList<Process>();
 	private static ArrayList<Process> blockedProcesses = new ArrayList<Process>();
 	private static ArrayList<Process> terminatedProcesses = new ArrayList<Process>();
@@ -23,10 +24,12 @@ public class Scheduler {
 	private static int CPUCycle = 0;
 	private static int blocked = 0;
 	private static Process currentRunningProcess = null;
-	
-	private static PrintWriter output = null;
-	private static File outputFile = null;
-	
+
+	// Used to determine when processes should run and wait for uniprogrammed
+	// scheduler algorithm
+	private static boolean run = true;
+	private static boolean wait = false;
+
 	public static void main(String[] args) {
 
 		// no verbose tag
@@ -38,18 +41,6 @@ public class Scheduler {
 			fileName = args[1];
 			verbose = true;
 
-		}else if(args.length == 3){
-			verbose = true;
-			fileName = args[1];
-			outputFile = new File(args[2]);
-			try {
-				output = new PrintWriter(outputFile);
-			}
-			catch (FileNotFoundException e) {
-				System.err.printf("Error: cannot open file %s for writing.\n.",
-						outputFile.getAbsolutePath());
-			}
-					
 		}
 		// Incorrect usage of arguments
 		else {
@@ -60,55 +51,61 @@ public class Scheduler {
 
 		initializeScanners();
 		initializeProcesses();
-
-		if(verbose){
+		if (verbose) {
 			verbosePrint("FCFS");
 		}
+
 		while (currentRunningProcess != null || readyProcesses.size() > 0 || processes.size() > 0
 				|| blockedProcesses.size() > 0) {
 			FCFS();
 		}
-		output.println(normalPrint());
+
+		System.out.println("\nThe scheduling algorithm used was First Come First Serve\n");
+		normalPrint();
 
 		flush();
-
 		initializeScanners();
 		initializeProcesses();
-		System.out.println("uniprogrammed \n");
-		if(verbose){
+		if (verbose) {
+			verbosePrint("RR");
+
+		}
+		while (currentRunningProcess != null || readyProcesses.size() > 0 || processes.size() > 0
+				|| blockedProcesses.size() > 0) {
+			roundRobin();
+		}
+
+		System.out.println("\nThe scheduling algorithm used was Round Robbin\n");
+		normalPrint();
+
+		flush();
+		initializeScanners();
+		initializeProcesses();
+		if (verbose) {
 			verbosePrint("uniprogrammed");
 		}
 		while (currentRunningProcess != null || readyProcesses.size() > 0 || processes.size() > 0
 				|| blockedProcesses.size() > 0) {
 			uniprogrammed();
 		}
+
+		System.out.println("\nThe scheduling algorithm used was Uniprocessing\n");
 		normalPrint();
-		
-//		flush();
-//		initializeScanners();
-//		initializeProcesses();
-//		System.out.println("\nShortestJobFirst");
-//		while (currentRunningProcess != null || readyProcesses.size() > 0 || processes.size() > 0
-//				|| blockedProcesses.size() > 0) {
-//			shortestJobFirst();
-//		}
-//		normalPrint();
-//		
-//		
-//		if(verbose){
-//		verbosePrint("FCFS");
-//	}
-//
-//		flush();
-//		initializeScanners();
-//		initializeProcesses();
-//		System.out.println("\nRound Robin\n");
-//		while (currentRunningProcess != null || readyProcesses.size() > 0 || processes.size() > 0
-//				|| blockedProcesses.size() > 0) {
-//			roundRobin();
-//		}
-//		normalPrint();
-//		
+
+		flush();
+		initializeScanners();
+		initializeProcesses();
+		if (verbose) {
+			verbosePrint("shortestJobFirst");
+		}
+		while (currentRunningProcess != null || readyProcesses.size() > 0 || processes.size() > 0
+				|| blockedProcesses.size() > 0) {
+			shortestJobFirst();
+		}
+
+		System.out.println("\nThe scheduling algorithm used was Shortest Job First\n");
+		normalPrint();
+
 	}
 
 	public static void initializeScanners() {
@@ -165,6 +162,9 @@ public class Scheduler {
 			System.out.print(initialProcesses.get(i).toString() + " ");
 		}
 		System.out.println();
+		if (verbose) {
+			System.out.println("\nThis detailed printout gives the state and remaining burst for each process\n");
+		}
 	}
 
 	public static int randomOs(int val) {
@@ -176,13 +176,12 @@ public class Scheduler {
 		// Keep track of the processes in each state
 
 		if (readyProcesses.size() > 0 && currentRunningProcess == null) {
-			// System.out.println("check0");
 			currentRunningProcess = readyProcesses.get(0);
 			// if this process hasn't ran before we initialize its running time
 			if (currentRunningProcess.getRemainigRunningTime() == -1) {
-				// System.out.println("\n"+
-				// randomOs(currentRunningProcess.getCPUBurstTime()));
-				currentRunningProcess.setRemainingRunningTime(randomOs(currentRunningProcess.getCPUBurstTime()));
+				int setTime = randomOs(currentRunningProcess.getCPUBurstTime());
+				currentRunningProcess.setRemainingRunningTime(setTime);
+				currentRunningProcess.setInitialRunningTime(setTime);
 			}
 			currentRunningProcess.setProcessState("RUNNING");
 			readyProcesses.remove(0);
@@ -194,13 +193,11 @@ public class Scheduler {
 			if (processes.get(i).getArrivalTime() <= CPUCycle) {
 				// if there are no running processes, we run the one that is
 				// ready
-				// System.out.println("\ncheck1----");
 				if (currentRunningProcess == null) {
-					// System.out.println("\ncheck2 should be here ----");
 					currentRunningProcess = processes.get(i);
-					currentRunningProcess.setRemainingRunningTime(randomOs(currentRunningProcess.getCPUBurstTime()));
-					// System.out.println("\n random os yields"+
-					// randomOs(currentRunningProcess.getCPUBurstTime()));
+					int setTime = randomOs(currentRunningProcess.getCPUBurstTime());
+					currentRunningProcess.setInitialRunningTime(setTime);
+					currentRunningProcess.setRemainingRunningTime(setTime);
 					processes.get(i).setProcessState("RUNNING");
 				}
 				// there is already a running process, this one waits as ready
@@ -217,11 +214,10 @@ public class Scheduler {
 
 		// We increment the time passed after going over the ready processes
 		passTime("FCFS");
-		// System.out.println("we passed time correctly");
-
-		if(verbose){
+		if (verbose) {
 			verbosePrint("FCFS");
 		}
+
 		ArrayList<Process> doneBlockedProcesses = new ArrayList<Process>();
 
 		// We then switch the blocked processes that are ready to ready
@@ -229,9 +225,7 @@ public class Scheduler {
 
 		// Determine which processes should be unblocked
 		for (int i = 0; i < blockedProcesses.size(); i++) {
-			// System.out.println("entered blocked for the " + i);
 			if (blockedProcesses.get(i).doneBlocked()) {
-				// System.out.println("entered the if of blocked for the " + i);
 				doneBlockedProcesses.add(blockedProcesses.get(i));
 				blockedProcesses.get(i).setProcessState("READY");
 				blockedProcesses.remove(i);
@@ -258,10 +252,8 @@ public class Scheduler {
 				} else {
 					blockedProcesses.add(currentRunningProcess);
 					if (currentRunningProcess.getRemainingBlockedTime() == -1) {
-						// System.out.println("about to set the remaining
-						// blocked time of this process to " +
-						// randomOs(currentRunningProcess.getIOBurstTime()));
-						currentRunningProcess.setRemainingBlockedTime(randomOs(currentRunningProcess.getIOBurstTime()));
+						currentRunningProcess.setRemainingBlockedTime(
+								currentRunningProcess.getInitialRunningTime() * currentRunningProcess.getIOBurstTime());
 
 					}
 					currentRunningProcess.setProcessState("BLOCKED");
@@ -271,22 +263,15 @@ public class Scheduler {
 		}
 
 	}
-	
 
 	public static void uniprogrammed() {
 
-		boolean run = true;
-		boolean wait = false;
-
 		if (readyProcesses.size() > 0 && currentRunningProcess == null) {
-			// System.out.println("check0");
 			currentRunningProcess = readyProcesses.get(0);
 			// if this process hasn't ran before we initialize its running time
 			if (currentRunningProcess.getRemainigRunningTime() == -1) {
-				// System.out.println("\n"+
-				// randomOs(currentRunningProcess.getCPUBurstTime()));
 				int runTimeSet = randomOs(currentRunningProcess.getCPUBurstTime());
-				System.out.println("SETTING RUN TIME TO" + runTimeSet);
+				currentRunningProcess.setInitialRunningTime(runTimeSet);
 				currentRunningProcess.setRemainingRunningTime(runTimeSet);
 			}
 			currentRunningProcess.setProcessState("RUNNING");
@@ -299,15 +284,11 @@ public class Scheduler {
 			if (processes.get(i).getArrivalTime() <= CPUCycle) {
 				// if there are no running processes, we run the one that is
 				// ready
-				// System.out.println("\ncheck1----");
 				if (currentRunningProcess == null) {
-					// System.out.println("\ncheck2 should be here ----");
 					currentRunningProcess = processes.get(i);
 					int runTimeSet = randomOs(currentRunningProcess.getCPUBurstTime());
-					System.out.println("SETTING RUN TIME TO" + runTimeSet);
+					currentRunningProcess.setInitialRunningTime(runTimeSet);
 					currentRunningProcess.setRemainingRunningTime(runTimeSet);
-					// System.out.println("\n random os yields"+
-					// randomOs(currentRunningProcess.getCPUBurstTime()));
 					processes.get(i).setProcessState("RUNNING");
 				}
 				// there is already a running process, this one waits as ready
@@ -324,16 +305,19 @@ public class Scheduler {
 
 		passTime("uniprogrammed");
 
-		if(verbose){
+		if (verbose) {
 			verbosePrint("uniprogrammed");
 		}
+
 		// keep track of the blocked processes
 
 		if (blockedProcesses.size() > 0) {
 			if (blockedProcesses.get(0).doneBlocked()) {
 				blockedProcesses.get(0).setProcessState("RUNNING");
 				if (blockedProcesses.get(0).getRemainigRunningTime() == -1) {
-					blockedProcesses.get(0).setRemainingRunningTime(blockedProcesses.get(0).getCPUBurstTime());
+					int runTimeSet = randomOs(blockedProcesses.get(0).getCPUBurstTime());
+					blockedProcesses.get(0).setInitialRunningTime(runTimeSet);
+					blockedProcesses.get(0).setRemainingRunningTime(runTimeSet);
 				}
 				blockedProcesses.remove(0);
 				run = true;
@@ -352,10 +336,10 @@ public class Scheduler {
 						run = true;
 					} else {
 						if (currentRunningProcess.getRemainingBlockedTime() == -1) {
-							int blockedSet = randomOs(currentRunningProcess.getIOBurstTime());
-							System.out.println("setting blocked to " + blockedSet);
-							currentRunningProcess
-									.setRemainingBlockedTime(blockedSet);
+							int blockedSet = currentRunningProcess.getInitialRunningTime()
+									* currentRunningProcess.getIOBurstTime();
+							currentRunningProcess.setRemainingBlockedTime(blockedSet);
+
 						}
 						currentRunningProcess.setProcessState("BLOCKED");
 						blockedProcesses.add(currentRunningProcess);
@@ -364,12 +348,12 @@ public class Scheduler {
 				}
 			}
 		}
-		wait=false;
+		wait = false;
 	}
-	
-	public static void shortestJobFirst(){
-		for(int i = 0; i< processes.size(); i++){
-			if(processes.get(i).getArrivalTime() == CPUCycle){
+
+	public static void shortestJobFirst() {
+		for (int i = 0; i < processes.size(); i++) {
+			if (processes.get(i).getArrivalTime() == CPUCycle) {
 				readyProcesses.add(processes.get(i));
 				processes.get(i).setProcessState("READY");
 				processes.remove(i);
@@ -377,73 +361,75 @@ public class Scheduler {
 			}
 		}
 		sortProcesses(readyProcesses, "cpuTime");
-		
-		if(currentRunningProcess == null && readyProcesses.size()>0){
+
+		if (currentRunningProcess == null && readyProcesses.size() > 0) {
 			currentRunningProcess = readyProcesses.get(0);
-			if(currentRunningProcess.getRemainigRunningTime() == -1){
-				currentRunningProcess.setRemainingRunningTime(randomOs(currentRunningProcess.getCPUBurstTime()));
+			if (currentRunningProcess.getRemainigRunningTime() == -1) {
+				int runTimeSet = randomOs(currentRunningProcess.getCPUBurstTime());
+				currentRunningProcess.setInitialRunningTime(runTimeSet);
+				currentRunningProcess.setRemainingRunningTime(runTimeSet);
 			}
 			currentRunningProcess.setProcessState("RUNNING");
 			readyProcesses.remove(0);
 		}
-		
+
 		passTime("shortestJobFirst");
-		
-		if(verbose){
+
+		if (verbose) {
 			verbosePrint("FCFS");
 		}
-		//Do Blocked Processes
+		// Do Blocked Processes
 		ArrayList<Process> doneBlockedProcesses = new ArrayList<Process>();
-		for(int i=0; i<blockedProcesses.size(); i++){
-			if(blockedProcesses.get(i).doneBlocked()){
+		for (int i = 0; i < blockedProcesses.size(); i++) {
+			if (blockedProcesses.get(i).doneBlocked()) {
 				doneBlockedProcesses.add(blockedProcesses.get(i));
 				blockedProcesses.get(i).setProcessState("READY");
 				blockedProcesses.remove(i);
 				i--;
 			}
 		}
-		
+
 		sortProcesses(doneBlockedProcesses, "arrival-number");
-		
-		for(int i =0; i<doneBlockedProcesses.size();i++){
+
+		for (int i = 0; i < doneBlockedProcesses.size(); i++) {
 			readyProcesses.add(doneBlockedProcesses.get(i));
 			doneBlockedProcesses.remove(i);
 			i--;
 		}
-		
-		//Running Processes
-		if(currentRunningProcess != null){
-			if(currentRunningProcess.shouldRun()){
-				if(currentRunningProcess.getTotalCPUTime() == 0){
+
+		// Running Processes
+		if (currentRunningProcess != null) {
+			if (currentRunningProcess.shouldRun()) {
+				if (currentRunningProcess.getTotalCPUTime() == 0) {
 					terminatedProcesses.add(currentRunningProcess);
 					currentRunningProcess.setProcessState("TERMINATED");
 					currentRunningProcess = null;
-				}else{
+				} else {
 					blockedProcesses.add(currentRunningProcess);
-					if(currentRunningProcess.getRemainingBlockedTime() == -1){
-						currentRunningProcess.setRemainingBlockedTime(randomOs(currentRunningProcess.getIOBurstTime()));
+					if (currentRunningProcess.getRemainingBlockedTime() == -1) {
+						currentRunningProcess.setRemainingBlockedTime(
+								currentRunningProcess.getInitialRunningTime() * currentRunningProcess.getIOBurstTime());
 					}
 					currentRunningProcess.setProcessState("BLOCKED");
 					currentRunningProcess = null;
-					
+
 				}
 			}
 		}
-		
+
 	}
-	
-	public static void roundRobin(){
-		
+
+	public static void roundRobin() {
+
 		final int quantum = 2;
 		int quantumTracker = 2;
 		if (readyProcesses.size() > 0 && currentRunningProcess == null) {
-			// System.out.println("check0");
 			currentRunningProcess = readyProcesses.get(0);
 			// if this process hasn't ran before we initialize its running time
 			if (currentRunningProcess.getRemainigRunningTime() == -1) {
-				// System.out.println("\n"+
-				// randomOs(currentRunningProcess.getCPUBurstTime()));
-				currentRunningProcess.setRemainingRunningTime(randomOs(currentRunningProcess.getCPUBurstTime()));
+				int runTimeSet = randomOs(currentRunningProcess.getCPUBurstTime());
+				currentRunningProcess.setInitialRunningTime(runTimeSet);
+				currentRunningProcess.setRemainingRunningTime(runTimeSet);
 			}
 			currentRunningProcess.setProcessState("RUNNING");
 			readyProcesses.remove(0);
@@ -455,13 +441,11 @@ public class Scheduler {
 			if (processes.get(i).getArrivalTime() <= CPUCycle) {
 				// if there are no running processes, we run the one that is
 				// ready
-				// System.out.println("\ncheck1----");
 				if (currentRunningProcess == null) {
-					// System.out.println("\ncheck2 should be here ----");
 					currentRunningProcess = processes.get(i);
-					currentRunningProcess.setRemainingRunningTime(randomOs(currentRunningProcess.getCPUBurstTime()));
-					// System.out.println("\n random os yields"+
-					// randomOs(currentRunningProcess.getCPUBurstTime()));
+					int runTimeSet = randomOs(currentRunningProcess.getCPUBurstTime());
+					currentRunningProcess.setInitialRunningTime(runTimeSet);
+					currentRunningProcess.setRemainingRunningTime(runTimeSet);
 					processes.get(i).setProcessState("RUNNING");
 				}
 				// there is already a running process, this one waits as ready
@@ -475,85 +459,90 @@ public class Scheduler {
 
 			}
 		}
-		
+
 		passTime("roundRobin");
-		
-		if(verbose){
+
+		if (verbose) {
 			verbosePrint("FCFS");
 		}
-		//blocked Processes
+		// blocked Processes
 		ArrayList<Process> doneBlockedProcesses = new ArrayList<Process>();
-		for(int i =0; i<blockedProcesses.size(); i++){
-			if(blockedProcesses.get(i).doneBlocked()){
+		for (int i = 0; i < blockedProcesses.size(); i++) {
+			if (blockedProcesses.get(i).doneBlocked()) {
 				doneBlockedProcesses.add(blockedProcesses.get(i));
 				blockedProcesses.get(i).setProcessState("READY");
 				blockedProcesses.remove(i);
 				i--;
 			}
 		}
-		
-		//running Processes
-		if(currentRunningProcess != null){
-			if(currentRunningProcess.shouldRun()){
-				if(currentRunningProcess.getTotalCPUTime() == 0){
+
+		// running Processes
+		if (currentRunningProcess != null) {
+			if (currentRunningProcess.shouldRun()) {
+				if (currentRunningProcess.getTotalCPUTime() <= 0) {
 					terminatedProcesses.add(currentRunningProcess);
 					currentRunningProcess.setProcessState("TERMINATED");
 					currentRunningProcess = null;
-				}else{
+				} else {
 					blockedProcesses.add(currentRunningProcess);
-					if(currentRunningProcess.getRemainingBlockedTime() == -1){
-						currentRunningProcess.setRemainingBlockedTime(randomOs(currentRunningProcess.getIOBurstTime()));
+					if (currentRunningProcess.getRemainingBlockedTime() == -1) {
+						currentRunningProcess.setRemainingBlockedTime(
+								currentRunningProcess.getInitialRunningTime() * currentRunningProcess.getIOBurstTime());
 					}
 					currentRunningProcess.setProcessState("BLOCKED");
 					currentRunningProcess = null;
 				}
-				quantumTracker =2;
-			}else{
+				quantumTracker = 2;
+			} else {
 				quantumTracker--;
-				if(quantumTracker ==0){
-					if(readyProcesses.size()>0){
+				if (quantumTracker == 0) {
+					if (readyProcesses.size() > 0) {
 						currentRunningProcess.setProcessState("READY");
 						doneBlockedProcesses.add(currentRunningProcess);
 						currentRunningProcess = readyProcesses.get(0);
 						currentRunningProcess.setProcessState("RUNNING");
-						if(currentRunningProcess.getRemainigRunningTime() == -1){
-							currentRunningProcess.setRemainingRunningTime(randomOs(currentRunningProcess.getCPUBurstTime()));
+						if (currentRunningProcess.getRemainigRunningTime() == -1) {
+							int runTimeSet = randomOs(currentRunningProcess.getCPUBurstTime());
+							currentRunningProcess.setInitialRunningTime(runTimeSet);
+							currentRunningProcess.setRemainingRunningTime(runTimeSet);
 						}
 						readyProcesses.remove(0);
 						sortProcesses(doneBlockedProcesses, "arrival-number");
-						for(int i = 0; i<doneBlockedProcesses.size(); i++){
+						for (int i = 0; i < doneBlockedProcesses.size(); i++) {
 							readyProcesses.add(doneBlockedProcesses.get(i));
 							doneBlockedProcesses.remove(i);
 							i--;
 						}
 						quantumTracker = 2;
 					}
-				}else if(doneBlockedProcesses.size() > 0){
+				} else if (doneBlockedProcesses.size() > 0) {
 					sortProcesses(doneBlockedProcesses, "arrival-number");
 					currentRunningProcess.setProcessState("READY");
 					doneBlockedProcesses.add(currentRunningProcess);
 					currentRunningProcess = doneBlockedProcesses.get(0);
 					currentRunningProcess.setProcessState("RUNNING");
-					if(currentRunningProcess.getRemainigRunningTime() == -1){
-						currentRunningProcess.setRemainingRunningTime(randomOs(currentRunningProcess.getCPUBurstTime()));
+					if (currentRunningProcess.getRemainigRunningTime() == -1) {
+						int runTimeSet = randomOs(currentRunningProcess.getCPUBurstTime());
+						currentRunningProcess.setInitialRunningTime(runTimeSet);
+						currentRunningProcess.setRemainingRunningTime(runTimeSet);
 					}
 					doneBlockedProcesses.remove(0);
 					sortProcesses(doneBlockedProcesses, "arrival-number");
-					for(int i=0; i< doneBlockedProcesses.size();i++){
+					for (int i = 0; i < doneBlockedProcesses.size(); i++) {
 						readyProcesses.add(doneBlockedProcesses.get(i));
 						doneBlockedProcesses.remove(i);
 						i--;
 					}
 					quantumTracker = 2;
-				}else{
+				} else {
 					quantumTracker = 2;
 				}
 			}
 		}
-		if(doneBlockedProcesses.size()>0){
+		if (doneBlockedProcesses.size() > 0) {
 			sortProcesses(doneBlockedProcesses, "arrival-number");
 		}
-		for(int i=0; i< doneBlockedProcesses.size();i++){
+		for (int i = 0; i < doneBlockedProcesses.size(); i++) {
 			readyProcesses.add(doneBlockedProcesses.get(i));
 			doneBlockedProcesses.remove(i);
 			i--;
@@ -561,6 +550,7 @@ public class Scheduler {
 
 	}
 
+	// Passes the time for the processes in each state
 	public static void passTime(String key) {
 
 		boolean blockedProcess = false;
@@ -610,18 +600,20 @@ public class Scheduler {
 
 	}
 
-	// sorts the processes by their arrival time
+	// sorts the processes by the given key by passing the corresponding
+	// comparators
 	public static void sortProcesses(ArrayList<Process> toSort, String key) {
 		if (key.equals("arrival")) {
 			Collections.sort(toSort, new ProcessComparatorByArrivalTime());
 		} else if (key.equals("arrival-number")) {
 			Collections.sort(toSort, new ProcessComparatorByArrivalTimeAndNumber());
-		} else if (key.equals("cpuTime")){
+		} else if (key.equals("cpuTime")) {
 			Collections.sort(toSort, new ProcessComparatorByCPUTime());
 		}
 
 	}
 
+	// Print the result of the scheduling algorithms in the specified format
 	public static void normalPrint() {
 		int finishingTime = 0;
 		int waitTime = 0;
@@ -652,27 +644,30 @@ public class Scheduler {
 		System.out.println("\tAverage turnaround time : " + (float) turnaroundTime / initialProcesses.size());
 		System.out.println("\tAverage waiting time: " + (float) waitTime / initialProcesses.size());
 	}
-	
-	public static void verbosePrint(String key){
-		System.out.print("\tBefore cycle " + CPUCycle + ":");
-		for(int i= 0; i < initialProcesses.size();i++){
-			if(initialProcesses.get(i).getProcessState().equals("INITIALIZED")){
-				System.out.printf("%12s%3d",  "unstarted ", 0);
-			}else if(initialProcesses.get(i).getProcessState().equals("READY")){
-				System.out.printf("%12s%3d",  "ready",  0);
-			}else if(initialProcesses.get(i).getProcessState().equals("RUNNING")){
-				if(key.equals("RR")){
-					System.out.printf("%12s",  "running");
-				}else{
-					System.out.printf("%12s%3d", "running ", initialProcesses.get(i).getRemainigRunningTime());
+
+	// Prints the verbose output
+
+	public static void verbosePrint(String key) {
+
+		System.out.printf("%13s%6d:", "Before cycle", CPUCycle);
+		for (int i = 0; i < initialProcesses.size(); i++) {
+			if (initialProcesses.get(i).getProcessState().equals("INITIALIZED")) {
+				System.out.printf("%12s%3d.", "unstarted ", 0);
+			} else if (initialProcesses.get(i).getProcessState().equals("READY")) {
+				System.out.printf("%12s%3d.", "ready", 0);
+			} else if (initialProcesses.get(i).getProcessState().equals("RUNNING")) {
+				if (key.equals("RR")) {
+					System.out.printf("%12s.", "running");
+				} else {
+					System.out.printf("%12s%3d.", "running ", initialProcesses.get(i).getRemainigRunningTime());
 				}
-			}else if(initialProcesses.get(i).getProcessState().equals("BLOCKED")){
-				System.out.printf("%12s%3d", "blocked ", initialProcesses.get(i).getRemainingBlockedTime());
-			}else if(initialProcesses.get(i).getProcessState().equals("TERMINATED")){
-				System.out.printf("%12s%3d", "terminated " , 0);
+			} else if (initialProcesses.get(i).getProcessState().equals("BLOCKED")) {
+				System.out.printf("%12s%3d.", "blocked ", initialProcesses.get(i).getRemainingBlockedTime());
+			} else if (initialProcesses.get(i).getProcessState().equals("TERMINATED")) {
+				System.out.printf("%12s%3d.", "terminated ", 0);
 			}
 		}
-		
+
 		System.out.println();
 	}
 
@@ -688,12 +683,16 @@ class ProcessComparatorByArrivalTime implements Comparator<Process> {
 
 }
 
-class ProcessComparatorByCPUTime implements Comparator<Process>{
-	
-	public int compare(Process process1, Process process2){
-		return ((Integer)process1.getTotalCPUTime()).compareTo((Integer)process2.getTotalCPUTime());
+// Creates a comparator to sort the proceses by the cpu time
+class ProcessComparatorByCPUTime implements Comparator<Process> {
+
+	public int compare(Process process1, Process process2) {
+		return ((Integer) process1.getTotalCPUTime()).compareTo((Integer) process2.getTotalCPUTime());
 	}
 }
+
+// Creates a comparator to sort the processes by their arrival time and then
+// process number
 
 class ProcessComparatorByArrivalTimeAndNumber implements Comparator<Process> {
 
