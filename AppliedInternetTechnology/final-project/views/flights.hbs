@@ -1,0 +1,81 @@
+<form method="GET" action="">
+    <h1>Flights</h1>
+    {{#if message}}
+    <p>{{message}}</p>
+    {{/if}}
+  <table>
+    <div class="container">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Flight Number</th>
+          <th>Airline</th>
+          <th>Available Seats</th>
+          <th>Take Off Location</th>
+          <th>Take Off Date</th>
+          <th>Take Off Time</th>
+          <th>Landing Location</th>
+          <th>Landing Date</th>
+          <th>Landing Time</th>
+        </tr>
+      </thead>
+      <!--Hard coding a flight for testing purposes-->
+      {{#each flights}}
+
+        <tbody>
+          <tr>
+            <td>{{flightNumber}}</td>
+            <td>{{airline}}</td>
+            <td>{{availableSeats}}</td>
+            <td>{{takeOffLocation}}</td>
+            <td>{{takeOffDate}}</td>
+            <td>{{takeOffTime}}</td>
+            <td>{{takeOffLocation}}</td>
+            <td>{{landingDate}}</td>
+            <td>{{landingTime}}</td>
+            </tr>
+          </tbody>
+      {{/each}}
+    </table>
+  </div>
+</form>
+<h1>Add a Flight</h1>
+<form id="create-form" method="POST" action="">
+	<div>
+		<label for="flightNumber">Flight Number</label>
+		<input type="text" name="flightNumber" id="flightNumber">
+	</div>
+	<div>
+		<label for="airline">Airline</label>
+		<input type="text" name="airline" id="airline">
+	</div>
+	<div>
+		<label for="availableSeats">Available Seats</label>
+		<input type="text" name="availableSeats" id="availableSeats">
+	</div>
+  <div>
+		<label for="takeOffLocation">Take Off Location</label>
+		<input type="text" name="takeOffLocation" id="takeOffLocation">
+	</div>
+  <div>
+		<label for="takeOffDater">Take Off Date</label>
+		<input type="text" name="takeOffDate" id="takeOffDate">
+	</div>
+  <div>
+		<label for="takeOffTime">Take Off Time</label>
+		<input type="text" name="takeOffTime" id="takeOffTime">
+	</div>
+  <div>
+		<label for="landingTime">Landing Location</label>
+		<input type="text" name="landingLocation" id="landingLocation">
+	</div>
+  <div>
+		<label for="landingDate">Landing Date</label>
+		<input type="text" name="landingDate" id="landingDate">
+	</div>
+  <div>
+		<label for="landingTime">Landing Time</label>
+		<input type="text" name="landingTime" id="landingTime">
+	</div>
+	<input type="submit" name="addBtn" id="addBtn" value="Add Flight">
+</form>

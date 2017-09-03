@@ -1,0 +1,44 @@
+<form method="POST" action="">
+    <h1> Available Flights </h1>
+    {{#if message}}
+    <p>{{message}}</p>
+    {{/if}}
+  <table>
+    <div class="container">
+      <table>
+        <div class="container">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Flight Number</th>
+              <th>Airline</th>
+              <th>Available Seats</th>
+              <th>Take Off Location</th>
+              <th>Take Off Date</th>
+              <th>Take Off Time</th>
+              <th>Landing Location</th>
+              <th>Landing Date</th>
+              <th>Landing Time</th>
+            </tr>
+          </thead>
+          <!--Hard coding a flight for testing purposes-->
+          {{#each flights}}
+
+            <tbody>
+              <tr>
+                <td>{{flightNumber}}</td>
+                <td>{{airline}}</td>
+                <td>{{availableSeats}}</td>
+                <td>{{takeOffLocation}}</td>
+                <td>{{takeOffDate}}</td>
+                <td>{{takeOffTime}}</td>
+                <td>{{takeOffLocation}}</td>
+                <td>{{landingDate}}</td>
+                <td>{{landingTime}}</td>
+                </tr>
+              </tbody>
+          {{/each}}
+        </table>
+  </div>
+  <input type="submit" value="Add To Cart"><br><br></div>
+</form>

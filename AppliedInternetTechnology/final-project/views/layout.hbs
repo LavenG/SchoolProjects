@@ -1,0 +1,47 @@
+<head>
+  <meta charset="UTF-8">
+  <!--Import bootstrap and all relevalnt libraries -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- Import own css file -->
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<html>
+  <body>
+    <nav class="navbar navbar-inverse center" role="navigation">
+      <div class="container-fluid">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/">Home</a></li>
+          <li><a href="/contact">Contact</a></li>
+          {{#if user}}
+            {{#if user.admin}}
+            <li><a href="/logout">Logout</a></li>
+            <li><a href="/flights">Flights</a></li>
+            {{else}}
+            <li><a href="/logout">Logout</a></li>
+            <li><a href="/availableFlights">Available Flights</a></li>
+            <li><a href="/myCart">My Cart</a></li>
+            {{/if}}
+          {{else}}
+          <li><a href="/login">Login</a></li>
+          <li><a href="/signUp">Sign Up</a></li>
+          {{/if}}
+        </ul>
+      </div>
+    </nav>
+    {{#if success_msg}}
+            <div class="alert alert-success">{{success_msg}}</div>
+          {{/if}}
+
+          {{#if error_msg}}
+            <div class="alert alert-danger">{{error_msg}}</div>
+          {{/if}}
+
+          {{#if error}}
+            <div class="alert alert-danger">{{error}}</div>
+    {{/if}}
+    {{{body}}}
+  </body>
+</html>

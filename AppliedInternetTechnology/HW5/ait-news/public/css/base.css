@@ -1,0 +1,56 @@
+.webTitle{
+  font-family: serif;
+  text-align: center;
+  font-size: 100px;
+  font-weight: bold;
+}
+
+
+
+.list{
+  float: center;
+  text-align: center;
+}
+
+.links{
+  color: black;
+  text-align: center;
+  font-size: 25px;
+  text-decoration: none;
+}
+
+.linkSubmitForm{
+  text-align: center;
+}
+
+.commentTitle{
+  font-family: serif;
+  text-align: center;
+  font-size: 50px;
+  font-weight: bold;
+}
+
+.commentSubtitle{
+  text-align: center;
+}
+
+.commentSubmitForm{
+  text-align: center;
+}
+
+.userName{
+  text-align: center;
+  color: rgb(128,128,128);
+  font-size: 20;
+}
+
+.userComment{
+  font-size: 25;
+  text-align: center;
+}
+
+.lastComment{
+  text-align: center;
+  color: rgb(128,128,128);
+  font-size: 20;
+}

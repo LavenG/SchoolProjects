@@ -1,0 +1,38 @@
+.navbar.center {
+  text-align: center;
+}
+
+.navbar.center .container-fluid .nav{
+  float:none;
+  display: inline-block;
+}
+
+.nav .navbar-nav{
+  color: white;
+}
+
+.nav{
+  width: 100%
+}
+
+.nav li{
+  width: 25%;
+  text-align: center;
+}
+
+h1, h2{
+  text-align: center;
+}
+
+body{
+  background-color: #5b7296;
+}
+
+.jumbotron {
+  background-color: #5b7296;
+  color: black;
+}
+
+.jumbotron .intro-text{
+  font-size:25px;
+}

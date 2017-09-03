@@ -1,0 +1,36 @@
+<h2>My Cart</h2>
+<table>
+  <div class="container">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Flight Number</th>
+        <th>Airline</th>
+        <th>Available Seats</th>
+        <th>Take Off Location</th>
+        <th>Take Off Date</th>
+        <th>Take Off Time</th>
+        <th>Landing Location</th>
+        <th>Landing Date</th>
+        <th>Landing Time</th>
+        <th>Select</th>
+      </tr>
+    </thead>
+    {{flights}}
+    {{#each flights}}
+    <tbody>
+      <tr>
+        <td>{{flightNumber}}</td>
+        <td>{{airline}}</td>
+        <td>{{availableSeats}}</td>
+        <td>{{takeOffLocation}}</td>
+        <td>{{takeOffDate}}</td>
+        <td>{{takeOffTime}}</td>
+        <td>{{landingLocation}}</td>
+        <td>{{landingDate}}</td>
+        <td>{{landingTime}}</td>
+        <td><input type="checkbox" name="flight1"></td>
+      </tr>
+    </tbody>
+    {{/each}}
+  </table>

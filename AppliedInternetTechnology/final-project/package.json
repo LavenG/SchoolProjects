@@ -1,0 +1,39 @@
+{
+  "name": "ak4410-final-project",
+  "version": "1.0.0",
+  "description": "The content below is an example project proposal / requirements document. Replace the text below the lines marked \"__TODO__\" with details specific to your project. Remove the \"TODO\" lines.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nyu-csci-ua-0480-008-spring-2017/ak4410-final-project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nyu-csci-ua-0480-008-spring-2017/ak4410-final-project/issues"
+  },
+  "homepage": "https://github.com/nyu-csci-ua-0480-008-spring-2017/ak4410-final-project#readme",
+  "devDependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.17.1",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "eslint": "^3.19.0",
+    "eslint-plugin-mocha": "^4.9.0",
+    "express": "^4.15.2",
+    "express-session": "^1.15.2",
+    "express-static": "^1.1.0",
+    "express-validator": "^3.1.3",
+    "flash": "^1.1.0",
+    "handlebars": "^4.0.6",
+    "hbs": "^4.0.1",
+    "mocha": "^3.2.0",
+    "mongodb": "^2.2.25",
+    "mongoose": "^4.9.4",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0"
+  }
+}

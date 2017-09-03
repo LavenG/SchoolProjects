@@ -1,0 +1,47 @@
+<form method="POST" action="/contact">
+  <h1> Contact </h1>
+  {{#if message}}
+    <div class="container">
+    <p>The following message has been received, we will reach out to you shortly.</p>
+    <blockquote>
+    <p>{{message}}</p>
+    <footer>{{firstName}} {{lastName}} <br>
+    {{emailAddress}}<br>
+    {{phoneNbr}}</footer>
+  </div>
+  {{else}}
+    <div class="container">
+      <div class="form-group row">
+        <label for="first-name" class="col-2 col-form-label">First Name</label>
+        <div class="col-10">
+          <input class="form-control" type="text" name="firstName" id="first-name">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="last-name" class="col-2 col-form-label">Last Name:</label>
+        <div class="col-10">
+          <input class="form-control" type="search" name="lastName" id="last-name">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="email" class="col-2 col-form-label">Email Address:</label>
+        <div class="col-10">
+          <input class="form-control" name="emailAddress" type="text" id="email">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="phone" class="col-2 col-form-label">Phone Number:</label>
+        <div class="col-10">
+          <input class="form-control" type="text" name="phoneNbr" id="phone">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="message" class="col-2 col-form-label row-10">Message:</label>
+        <div class="col-10">
+          <input class="form-control" type="text" name="message" id="message">
+        </div>
+      </div>
+      <input type="submit" value="Submit"><br><br></div>
+    </div>
+    {{/if}}
+</form>

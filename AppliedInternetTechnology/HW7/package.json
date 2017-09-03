@@ -1,0 +1,25 @@
+{
+  "name": "ak4410-homework07",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".eslintrc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nyu-csci-ua-0480-008-spring-2017/ak4410-homework07.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nyu-csci-ua-0480-008-spring-2017/ak4410-homework07/issues"
+  },
+  "homepage": "https://github.com/nyu-csci-ua-0480-008-spring-2017/ak4410-homework07#readme",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-plugin-mocha": "^4.9.0",
+    "express": "^4.15.2",
+    "express-static": "^1.1.0"
+  }
+}

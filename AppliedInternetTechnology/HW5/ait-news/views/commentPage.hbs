@@ -1,0 +1,13 @@
+<form method="POST" action="/singularComment">
+  {{#with link}}
+  <h1 class="commentTitle"> {{title}} <a class="url" href={{url}}>({{url}})</a></h1>
+  <input type="hidden" name="slug" value={{slug}}>
+  <h2 class="commentSubtitle">Comments</h2>
+  {{#each comments}}
+    <div class="userName">{{user}} </div>
+    <div class="userComment">{{text}} <br></div>
+  {{/each}}
+  {{/with}}
+  <div class="commentSubmitForm">Comment:<input name="comment" type="text"> Name:<input name="name" type="text"><input type="submit" value="Submit Link!"></div>
+  <br><div class="lastComment">{{lastComment}}</div>
+</form>

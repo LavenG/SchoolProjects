@@ -1,0 +1,9 @@
+<form method="POST" action="/magicalLinkCreation">
+  <h1 class="webTitle"> 480 News! </h1>
+  <ol class = "list">
+    {{#each links}}
+    <li class="links"><a href={{url}}>{{title}}</a>, <a href={{slug}}>[comments]</a></li>
+    {{/each}}
+  </ol>
+  <div class="linkSubmitForm">URL:<input name="url" type="text"> Title:<input name="title" type="text"><input type="submit" value="Submit Link!"></div>
+</form>

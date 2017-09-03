@@ -1,0 +1,10 @@
+<h1> Home! </h1>
+
+{{#if message}}
+<div class= "loggedIn">{{message}}</div><br>
+{{else}}
+<div class="error"> Not logged in </div></br>
+<div class="regLog"><a href="/register">Register</a> or <a href="/login">Login</a></div>
+{{/if}}
+<br>
+<div class="secret">Try checking out the <a href="/restricted"> page that requries authentication</a></div>
