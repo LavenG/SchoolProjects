@@ -1,0 +1,73 @@
+Without SH/PR enabled:
+
+test3.cfg:
+Time :10 Link between Router 3/Interface 1 and Router 4/Interface 0 is down.
+Time :12 A packet is sent from Router 0 to Router 4.
+Time :13 -> Time :26. First Router 2 advertises its distance to Router 0 for
+Router 4 even though it reaches Router 4 via Router 0. This Causes a loop to
+form and packets are sent back and forth between Router 2 and Router 1 until
+the network re-converges and the packet is routed from Router 2 to Router 4 via
+Router 5 and 6. => slow convergence and loop.
+Time :30 The packet is received
+
+Time :35 Link between Router 0/Interface0 and Router 3/Interface 0 is down.
+Time :40 -> Time :43 Since the network has converged before the packet is sent
+no loops from and the packet takes the correct route from the start
+Time :43 The packet is received
+
+Time :45 Link between Router 2/Interface 2 and Router 5/Interface 0 is down.
+Time :50 A packet is sent from Router 0 to Router 5
+Time :51 -> Time :103 There is no way for a packet to reach Router 5 from Router
+0, the network is split. This causes a loop to be created between Router 1 and
+Router 2 until the network finally converges, the metrics are set to infinity
+and the packet is dropped at Time :103. => slow convergence and loop.
+
+test4.cfg:
+Time :15 Link between Router 2/Interface 2 and Router 5/Interface 0 is down.
+Time :20 -> Time :24 A packet is sent from Router 7 to Router 2. The shortest
+path from Router 7 to Router 2 is via Router 4, 3, 0 in order. Since the packet
+is not forwarded via Router 5 to begin with the link that is down does not
+affect the packet deliver and the packet is successfully received at Time :24
+
+Time :30 Link between Router 0/Interface 0 and Router 3/Interface 0 is down.
+Time :40 A packet is sent from Router 7 to Router 2
+Time :41 -> Time :88 There is no way for a packet to reach Router 2 from Router
+7, the network is split. This causes a loop to be created between Router 6 and
+Router 5 until the network finally converges, the metrics are set to infinity
+and the packet is dropped at Time :88. => slow convergence and loop.
+
+With SH/PR enabled:
+
+test3.cfg:
+Time :10 Link between Router 3/Interface 1 and Router 4/Interface 0 is down.
+Time :12 Trial to send a packet from Router 0 to Router 4 results in it being
+immediately dropped because the network has already converged and the metric
+of destination 4 for Router 0 is already set to infinity. This prevents any
+loops and the network is not overloaded. SH/PR does prevent the pathology
+previously observed.
+
+Time :35 Link between Router 0/Interface0 and Router 3/Interface 0 is down.
+Time :40 -> Time :43 The process is exactly the same as when SH/PH is off since
+there were no problems to begin with.
+
+Time :45 Link between Router 2/Interface 2 and Router 5/Interface 0 is down.
+Time :50 A packet is sent from Router 0 to Router 5
+Time :51 Trial to send a packet from Router 0 to Router 5 results in it being
+dropped. Once the packet arrives at Router at 1 from Router 0 the network has
+converged and the metric for destination 5 for Router 1 has been set to infinity.
+This prevents any loops and the network is not overloaded. SH/PR does prevent
+the pathology previously observed.
+
+test4.cfg:
+
+Time :15 Link between Router 2/Interface 2 and Router 5/Interface 0 is down.
+Time :20 -> Time :24 The process is exactly the same as when SH/PH is off since
+there were no problems to begin with.
+
+Time :30 Link between Router 0/Interface 0 and Router 3/Interface 0 is down.
+Time :40 A packet is sent from Router 7 to Router 2
+Time :41 -> Time :47 The Routers start forwarding the packet because the
+network has not fully converged yet. The packet starts bouncing around until
+a loop forms between Routers 3, 4 and 6. Finally at Time :47 the network has
+converged and the packet is dropped. This prevents long loops and the network is
+not overloaded. SH/PR does prevent the pathology previously observed.
